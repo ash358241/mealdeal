@@ -1,4 +1,4 @@
-import { FlatList, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -6,7 +6,7 @@ import Colors from '../../assets/Colors';
 import Category from '../../assets/data/Category';
 import Popular from '../../assets/data/Popular';
 
-const Home = () => {
+const Home = ({navigation}) => {
 
   const renderCategoryItem = ({item}) => {
     return (
@@ -61,12 +61,14 @@ const Home = () => {
         </View>
       </View>
 
-      {/* popular */}
+      {/* popular */} 
       <View style={styles.popularWrapper}>
         <Text style={styles.popularTitle}>Popular</Text>
         {
           Popular.map(item => (
+            <TouchableOpacity onPress={() => navigation.navigate('Details', item)}>
             <View style={[styles.popularCardWrapper, {
+              key: item.id,
               marginTop: item.id == 1 ? 10 : 20,
             }]}>
               <View>
@@ -94,6 +96,7 @@ const Home = () => {
                 <Image source={item.image} style={styles.popularCardImg} />
               </View>
             </View>
+            </TouchableOpacity>
           ))
         }
       </View>
