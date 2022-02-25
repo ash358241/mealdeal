@@ -1,10 +1,98 @@
 import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Colors from '../../assets/Colors';
+import * as Notifications from 'expo-notifications'
+import * as Permissions from 'expo-permissions'
+
+Notifications.setNotificationHandler({
+  handleNotification: () => {
+    return ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      // shouldSetBadge: true,
+    })
+  }
+})
 
 const Details = ({ route, navigation }) => {
+
+  //notification
+  const [pushToken, setPushToken] = useState();
+  console.log('push token:', pushToken)
+
+  useEffect(() => {
+    Permissions.getAsync(Permissions.NOTIFICATIONS)
+      .then((statusObj) => {
+        if (statusObj.status !== 'granted') {
+          return Permissions.askAsync(Permissions.NOTIFICATIONS);
+        }
+        return statusObj;
+      })
+      .then((statusObj) => {
+        if (statusObj.status !== 'granted') {
+          throw new Error('Permission not granted!');
+        }
+      })
+      .then(() => {
+        console.log('getting token');
+        return Notifications.getExpoPushTokenAsync();
+      })
+      .then(response => {
+        const token = response.data;
+        setPushToken(token);
+      })
+      .catch((err) => {
+        console.log(err);
+        return null;
+      });
+  }, []);
+
+  useEffect(() => {
+    const backgroundSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    })
+
+    const foregroundSubscription = Notifications.addNotificationReceivedListener(notification => {
+      console.log(notification);
+    })
+
+    return () => {
+      backgroundSubscription.remove();
+      foregroundSubscription.remove();
+    }
+
+  }, [])
+
+  const triggerNotifications = () => {
+    // Notifications.scheduleNotificationAsync({
+    //   content: {
+    //     title: 'Hello',
+    //     body: 'This is a test notification',
+    //   },
+    //   trigger: {
+    //     seconds: 5,
+    //   }
+    // })
+    fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-Encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: pushToken,
+        data: { extraData: 'Some data' },
+        title: 'Sent via MealDeal',
+        body: 'Your order has been placed',
+      }),
+    });
+  }
+
+
+
   const { title, price, sizeNumber, sizeName, crust, deliveryTime, image, ingredients } = route.params;
 
   const renderIngredientsItem = ({ item }) => {
@@ -77,7 +165,7 @@ const Details = ({ route, navigation }) => {
       </View>
 
       {/* Place an order */}
-      <TouchableOpacity onPress={() => alert("Order has been placed!")}>
+      <TouchableOpacity onPress={triggerNotifications}>
         <View style={styles.placeOrder}>
           <Text style={styles.placeOrderTxt}>Place an order</Text>
           <Feather name="chevron-right" size={24} color="black" />

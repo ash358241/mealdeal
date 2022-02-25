@@ -4,7 +4,6 @@
     "slug": "mealdeal",
     "version": "1.0.0",
     "orientation": "portrait",
-    
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
@@ -16,12 +15,17 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "buildNumber": "1.0.0",
+      "bundleIdentifier": "com.coderstrio.ash"
     },
     "android": {
+      "useNextNotificationsApi": true,
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.ashraful_islam.mealdeal"
     }
   }
 }
